@@ -117,12 +117,27 @@ export default function SmartBoPol() {
     if (!email || !password || (!isLogin && !username)) return alert("Please fill in all fields.");
     if (isLogin) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) alert(error.message);
-      else { setAuthModalOpen(false); resetAuthFieldsLocal(); }
+      
+      if (error) {
+        // Check if the error is because they haven't verified their email
+        if (error.message.includes("Email not confirmed")) {
+          alert("Please check your inbox and click the verification link before logging in.");
+        } else {
+          alert(error.message); 
+        }
+      } else {
+        setAuthModalOpen(false);
+        resetAuthFieldsLocal();
+      }
     } else {
-      const { error } = await supabase.auth.signUp({ email, password, options: { data: { username, role: userRole } } });
+      // Sign Up part
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { username, role: userRole } }
+      });
       if (error) alert(error.message);
-      else alert("Sign up successful! Please log in.");
+      else alert("Sign up successful! A verification link has been sent to your email. Please click it to activate your account.");
     }
   };
 
